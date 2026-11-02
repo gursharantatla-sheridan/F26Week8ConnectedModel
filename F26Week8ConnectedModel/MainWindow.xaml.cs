@@ -31,25 +31,48 @@ namespace F26Week8ConnectedModel
 
         private void LoadEmployees()
         {
-            SqlConnection conn = new SqlConnection(connStr);
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string query = "select * from Employees";
+                SqlCommand cmd = new SqlCommand(query, conn);
 
-            string query = "select * from Employees";
-            SqlCommand cmd = new SqlCommand(query, conn);
+                conn.Open();
 
-            conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
 
-            SqlDataReader reader = cmd.ExecuteReader();
-
-            DataTable tbl = new DataTable();
-            tbl.Load(reader);
-            grdEmployees.ItemsSource = tbl.DefaultView;
-
-            conn.Close();
+                DataTable tbl = new DataTable();
+                tbl.Load(reader);
+                grdEmployees.ItemsSource = tbl.DefaultView;
+            }
+            //conn.Close();
         }
 
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             LoadEmployees();
+        }
+
+        private void btnSearch_Click(object sender, RoutedEventArgs e)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                // paramterized query - GOOD PRACTICE
+                string query = "select * from Employees where FirstName = @fn";
+
+                // string concatenation - BAD PRACTICE
+                //string query = "select * from Employees where FirstName = '" + txtFirstname.Text + "'";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("fn", txtFirstname.Text);
+
+                conn.Open();
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                DataTable tbl = new DataTable();
+                tbl.Load(reader);
+                grdEmployees.ItemsSource = tbl.DefaultView;
+            }
         }
     }
 }
